@@ -1,0 +1,38 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+# Step 1: URL of the website
+url = "https://www.geeksforgeeks.org/"
+
+# Step 2: Fetch HTML content
+response = requests.get(url)
+
+# Step 3: Check if request is successful
+if response.status_code == 200:
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Step 4: Find all quote blocks
+    quotes = soup.find_all("div", class_="quote")
+
+    # Step 5: Open CSV file
+    with open("data.csv", "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Quote", "Author", "Tags"])
+
+        # Step 6: Extract data safely
+        for quote in quotes:
+            text = quote.find("span", class_="text")
+            author = quote.find("small", class_="author")
+            tags = quote.find_all("a", class_="tag")
+
+            quote_text = text.text if text else "N/A"
+            author_name = author.text if author else "N/A"
+            tag_list = ", ".join([tag.text for tag in tags])
+
+            writer.writerow([quote_text, author_name, tag_list])
+
+    print("Data scraped successfully and saved to data.csv")
+
+else:
+    print("Failed to retrieve webpage")
